@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # s3:
+  #   image: minio/minio
+  #   container_name: mlflow_minio
+  #   ports:
+  #     - "9000:9000" # API port
+  #     - "9001:9001" # Console UI port
+  #   environment:
+  #     - MINIO_ROOT_USER=admin
+  #     - MINIO_ROOT_PASSWORD=password
+  #   command: server /data --console-address ":9001"
+  #   use by "--default-artifact-root s3://mlflow-bucket/" in mlflow service's command
+
+  # postgres:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_DB: mlflow
+  #     POSTGRES_USER: mlflow
+  #     POSTGRES_PASSWORD: mlflow
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   use by  "--backend-store-uri ${DB_URI}" in mlflow service's command
+  
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow_server
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+    # environment:
+    #   - DB_URI=postgresql://mlflow:mlflow@db:5432/mlflow
+    volumes:
+      - ./artifacts:/mlflow/artifacts
+    command: >
+      mlflow server 
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0 
+      --port 5000
+
+
+  
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+  
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mlflow
+      - redis
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+  
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  
+  # grafana:
+  #   image: grafana/grafana
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+
+volumes:
+  postgres_data:
