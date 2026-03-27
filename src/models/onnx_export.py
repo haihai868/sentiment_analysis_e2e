@@ -23,9 +23,7 @@ def validate_onnx_model(onnx_model):
         logger.error(f"ONNX validation failed: {e}")
         raise
 
-def export_sklearn_to_onnx(model: BaseEstimator,
-                            feature_names: list,
-                            initial_types: Optional[list] = None) -> str:
+def export_sklearn_to_onnx(model: BaseEstimator, initial_types: Optional[list] = None) -> str:
     """
     Export scikit-learn model to ONNX using skl2onnx
     """

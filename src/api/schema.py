@@ -8,7 +8,7 @@ class BatchPredictionRequest(BaseModel):
     texts: List[str] = Field(..., max_items=100)
     
 class PredictionResponse(BaseModel):
-    text: str
+    clean_text: str
     sentiment: str
     probabilities: dict
     

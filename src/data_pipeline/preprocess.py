@@ -7,11 +7,12 @@ from nltk.stem import WordNetLemmatizer
 from typing import List, Dict, Any
 import logging
 import html
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
 # Download NLTK data
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('punkt')
@@ -30,7 +31,7 @@ class TextPreprocessor:
         
         text = html.unescape(text)
         # Remove HTML tags
-        text = BeautifulSoup(text, "html.parser").get_text()
+        # text = BeautifulSoup(text, "html.parser").get_text()
         
         # Remove URLs
         text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)

@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -20,9 +23,11 @@ from onnx_export import export_sklearn_to_onnx
 from model_registry import register_model, transition_stage
 
 
-# run ngrok http 5000 in local
-TRACKING_URI = "https://b31880069539.ngrok-free.app"
-mlflow.set_tracking_uri(TRACKING_URI)
+
+load_dotenv()
+
+DEFAULT_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+mlflow.set_tracking_uri(DEFAULT_TRACKING_URI)
 mlflow.set_experiment("sentiment analysis")
 
 def run_experiment(
@@ -119,13 +124,13 @@ def run_experiment(
         mlflow.log_metric("accuracy", acc)
         mlflow.log_metric("f1_score", f1)
 
-        # model
-        onnx_model = export_sklearn_to_onnx(
-            model=pipeline,
-            feature_names=vectorizer.get_feature_names_out()
-        )
-        mlflow.sklearn.log_model(pipeline, model_path)
-        mlflow.onnx.log_model(onnx_model, f"onnx_{model_path}" )
+        
+        mlflow.sklearn.log_model(sk_model=pipeline, artifact_path=model_path)
+
+        if f1 > 0.9 and acc > 0.9:
+            # onnx model
+            onnx_model = export_sklearn_to_onnx(model=pipeline)
+            mlflow.onnx.log_model(onnx_model=onnx_model, artifact_path=f"onnx_{model_path}" )
 
 
     
@@ -135,15 +140,15 @@ def run_experiment(
         description="Twitter Sentiment Analysis Model"
     )
 
-    onnx_registered_version = register_model(
-        run_id=run.info.run_id,
-        model_path=f"onnx_{model_path}",
-        description="ONNX version of Twitter Sentiment Analysis Model"
-    )
-
     if f1 > 0.9 and acc > 0.9:
-        transition_stage(version=registered_version, stage="Staging")
-        transition_stage(version=onnx_registered_version, stage="Staging")
+        onnx_registered_version = register_model(
+            run_id=run.info.run_id,
+            model_path=f"onnx_{model_path}",
+            description="ONNX version of Twitter Sentiment Analysis Model"
+        )
+        
+        transition_stage(model_name="sklearn", version=registered_version, stage="Staging")
+        transition_stage(model_name="onnx_model", version=onnx_registered_version, stage="Staging")
 
     return {
         "accuracy": acc,

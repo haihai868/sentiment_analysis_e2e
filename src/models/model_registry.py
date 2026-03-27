@@ -1,19 +1,22 @@
-import mlflow
-from mlflow.tracking import MlflowClient
+import os
+from dotenv import load_dotenv
 from typing import Dict, Optional
 import logging
 from datetime import datetime
 
+import mlflow
+from mlflow.tracking import MlflowClient
+import onnxruntime as ort
+
+load_dotenv()
 logger = logging.getLogger(__name__)
 
-TRACKING_URI = "https://b31880069539.ngrok-free.app"
+DEFAULT_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
 client = MlflowClient()
-model_name = "dfbgdf"
 
-
-mlflow.set_tracking_uri(TRACKING_URI)
+mlflow.set_tracking_uri(DEFAULT_TRACKING_URI)
     
-def register_model(run_id: str, model_path: str, description: Optional[str] = None) -> str:
+def register_model(run_id: str, model_path: str, model_name, description: Optional[str] = None) -> str:
     """Register model in registry"""
     try:
         # Register model
@@ -41,7 +44,7 @@ def register_model(run_id: str, model_path: str, description: Optional[str] = No
         logger.error(f"Error registering model: {e}")
         raise
 
-def transition_stage(version: str, stage: str):
+def transition_stage(model_name, version: str, stage: str):
     """Transition model to different stage"""
     try:
         client.transition_model_version_stage(
@@ -55,7 +58,7 @@ def transition_stage(version: str, stage: str):
         logger.error(f"Error transitioning model: {e}")
         raise
 
-def load_production_model(self):
+def load_production_model(model_name):
     """Load production model from MLflow"""
     try:
         model_uri = f"models:/{model_name}/Production"
@@ -64,3 +67,15 @@ def load_production_model(self):
     except Exception as e:
         logger.error(f"Error loading production model: {e}")
         raise
+
+def load_production_onnx_model(model_name) -> ort.InferenceSession:
+    """Load onnx model from MLflow Registry stage Production"""
+    try:
+        model_uri = f"models:/{model_name}/Production"
+        
+        local_path = mlflow.artifacts.download_artifacts(model_uri=model_uri)
+        return ort.InferenceSession(f"{local_path}/model.onnx")
+    
+    except Exception as e:
+        raise RuntimeError(f"Failed to load Production model '{model_name}': {e}")
+

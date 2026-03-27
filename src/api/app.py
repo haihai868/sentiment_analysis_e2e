@@ -6,8 +6,7 @@ from typing import List
 import time
 
 from prometheus_client import Counter, Histogram, generate_latest
-
-from src.models.inference import InferenceService, ONNXInferenceService
+from src.models.inference import ONNXInferenceService
 from src.api.schema import PredictionRequest, BatchPredictionRequest, PredictionResponse, HealthResponse
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +28,7 @@ REQUEST_LATENCY = Histogram(
 
 # Initialize prediction service
 # config_path = Path(__file__).parent.parent.parent / "config/config.yaml"
-prediction_service = ONNXInferenceService()
+prediction_service = ONNXInferenceService(model_path='artifacts/onnx_pipeline.onnx')
 
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
@@ -78,7 +77,6 @@ async def predict_batch(request: BatchPredictionRequest):
     """Predict sentiment for multiple texts"""
     try:
         results = prediction_service.predict_batch(request.texts)
-
 
         return results
     except Exception as e:
