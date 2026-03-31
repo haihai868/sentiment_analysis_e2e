@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import pandas as pd
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
@@ -157,6 +158,7 @@ def run_experiment(
         "run_id": run.info.run_id
     }
 
+# df = pd.read_csv("data/processed/processed_twitter_data.csv")
 # run_experiment(
 #     df,
 #     vectorizer_type="tfidf",

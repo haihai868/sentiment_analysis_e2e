@@ -1,0 +1,34 @@
+stages:
+  ingest:
+    cmd: python src/data_pipeline/ingest.py
+    deps:
+      - src/data_pipeline/ingest.py
+    outs:
+      - data/raw/Twitter_Data.csv
+
+  preprocess:
+    cmd: python src/data_pipeline/preprocess.py
+    deps:
+      - src/data_pipeline/preprocess.py
+      - data/raw/Twitter_Data.csv
+    outs:
+      - data/processed/processed_twitter_data.csv
+
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - src/models/train.py
+      - data/processed/processed_twitter_data.csv
+    params:
+      - model.C
+    outs:
+      # - models/model.pkl
+      - artifacts/model.onnx
+
+  # evaluate:
+  #   cmd: python src/models/evaluate.py
+  #   deps:
+  #     - src/models/evaluate.py
+  #     - models/model.pkl
+    # metrics:
+    #   - metrics.json

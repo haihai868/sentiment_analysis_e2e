@@ -11,7 +11,8 @@ services:
   #     - MINIO_ROOT_USER=admin
   #     - MINIO_ROOT_PASSWORD=password
   #   command: server /data --console-address ":9001"
-  #   use by "--default-artifact-root s3://mlflow-bucket/" in mlflow service's command
+  #  store raw ingestion data
+  #  mlflow uses by "--default-artifact-root s3://mlflow-bucket/" in mlflow service's command
 
   # postgres:
   #   image: postgres:13
@@ -59,6 +60,7 @@ services:
       - "8000:8000"
     depends_on:
       - mlflow
+      - s3
       # - redis
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000

@@ -94,3 +94,11 @@ class TextPreprocessor:
         texts_tokens = [self.lemmatize(tokens) for tokens in texts_tokens]
         texts = [' '.join(tokens) for tokens in texts_tokens]
         return texts
+    
+if __name__ == "__main__":
+    # Example usage
+    df = pd.read_csv('data/raw/Twitter_Data.csv')
+    
+    preprocessor = TextPreprocessor()
+    processed_df = preprocessor.preprocess_df(df)
+    processed_df.to_csv('data/processed/processed_twitter_data.csv', index=False)

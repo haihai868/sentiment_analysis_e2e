@@ -1,6 +1,7 @@
 name: MLOps Pipeline
 
-# on:
+on:
+  workflow_dispatch:    # only run when one manually triggers
 #   push:
 #     branches: [main]
 

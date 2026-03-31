@@ -1,33 +1,50 @@
-import pandas as pd
-import numpy as np
-from typing import Tuple, Optional
-import kaggle
+import os
+import zipfile
 import logging
-from pathlib import Path
-import json
-from datetime import datetime
 
-logging.basicConfig(level=logging.INFO)
+from dotenv import load_dotenv
+load_dotenv()
+
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+
 logger = logging.getLogger(__name__)
 
-class DataIngestion:
-    """Handle data ingestion from ?"""
-    
-    def __init__(self, config: dict):
-        self.config = config
-        self.data_path = Path(config['data']['raw_path'])
-        self.data_path.mkdir(parents=True, exist_ok=True)
-        
-    def download_kaggle_dataset(self, dataset_name: str) -> str:
-        """Download dataset from Kaggle"""
-        try:
-            logger.info(f"Downloading dataset: {dataset_name}")
-            kaggle.api.dataset_download_files(
-                dataset_name,
-                path=self.data_path,
-                unzip=True
-            )
-            return str(self.data_path)
-        except Exception as e:
-            logger.error(f"Error downloading dataset: {e}")
-            raise
+def download_kaggle_dataset(dataset: str, output_path: str):
+    """
+    Download dataset from Kaggle
+    """
+
+    api = KaggleApi()
+    api.authenticate()
+
+    os.makedirs(output_path, exist_ok=True)
+
+    logger.info(f"Downloading dataset: {dataset}...")
+
+    api.dataset_download_files(
+        dataset,
+        path=output_path,
+        unzip=False  
+    )
+
+    logger.info("Complete downloading. Unzipping...")
+
+    for file in os.listdir(output_path):
+        if file.endswith(".zip"):
+            zip_path = os.path.join(output_path, file)
+
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(output_path)
+
+            # remove zip path
+            os.remove(zip_path)
+
+    logger.info("Done!")
+
+
+if __name__ == "__main__":
+    download_kaggle_dataset(
+        dataset="saurabhshahane/twitter-sentiment-dataset",
+        output_path="data/raw"
+    )
