@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # s3:
@@ -23,7 +23,7 @@ services:
   #   volumes:
   #     - postgres_data:/var/lib/postgresql/data
   #   use by  "--backend-store-uri ${DB_URI}" in mlflow service's command
-  
+
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     container_name: mlflow_server
@@ -45,13 +45,11 @@ services:
       --host 0.0.0.0 
       --port 5000
 
-
-  
   # redis:
   #   image: redis:6-alpine
   #   ports:
   #     - "6379:6379"
-  
+
   app:
     build:
       context: .
@@ -72,10 +70,10 @@ services:
       - ./artifacts:/app/artifacts
     networks:
       - sa-network
-  
+
   prometheus:
     image: prom/prometheus
-    container_name: prometheus  
+    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -84,7 +82,7 @@ services:
       - sa-network
     depends_on:
       - app
-  
+
   grafana:
     image: grafana/grafana
     container_name: grafana

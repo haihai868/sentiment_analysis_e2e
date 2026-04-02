@@ -33,7 +33,7 @@ REQUEST_LATENCY = Histogram(
 
 # Initialize prediction service
 # config_path = Path(__file__).parent.parent.parent / "config/config.yaml"
-prediction_service = ONNXInferenceService(model_path='artifacts/onnx_pipeline.onnx')
+prediction_service = ONNXInferenceService(model_path='artifacts/onnx_model.onnx')
 
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
