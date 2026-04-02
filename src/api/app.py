@@ -6,6 +6,8 @@ from typing import List
 import time
 
 from prometheus_client import Counter, Histogram, generate_latest
+from prometheus_client import CollectorRegistry
+
 from src.models.inference import ONNXInferenceService
 from src.api.schema import PredictionRequest, BatchPredictionRequest, PredictionResponse, HealthResponse
 
@@ -14,16 +16,19 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Twitter Sentiment Analysis API")
 
+registry = CollectorRegistry()
 REQUEST_COUNT = Counter(
     "request_count",
     "Total requests",
-    ["endpoint", "status"]
+    ["endpoint", "status"],
+    registry=registry
 )
 
 REQUEST_LATENCY = Histogram(
     "request_latency_seconds",
     "Request latency",
-    ["endpoint"]
+    ["endpoint"],
+    registry=registry
 )
 
 # Initialize prediction service

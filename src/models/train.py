@@ -138,6 +138,7 @@ def run_experiment(
     registered_version = register_model(
         run_id=run.info.run_id,
         model_path=model_path,
+        model_name="sklearn",
         description="Twitter Sentiment Analysis Model"
     )
 
@@ -145,6 +146,7 @@ def run_experiment(
         onnx_registered_version = register_model(
             run_id=run.info.run_id,
             model_path=f"onnx_{model_path}",
+            model_name="onnx_model",
             description="ONNX version of Twitter Sentiment Analysis Model"
         )
         
@@ -158,18 +160,21 @@ def run_experiment(
         "run_id": run.info.run_id
     }
 
-# df = pd.read_csv("data/processed/processed_twitter_data.csv")
-# run_experiment(
-#     df,
-#     vectorizer_type="tfidf",
-#     ngram_range=(1, 1),
-#     vectorizer_max_features=5000,
+if __name__ == "__main__":
+    df = pd.read_csv("data/processed/processed_twitter_data.csv")
+    results = run_experiment(
+        df,
+        vectorizer_type="tfidf",
+        ngram_range=(1, 1),
+        vectorizer_max_features=5000,
 
-#     model_type="logistic",
-#     model_params=None,
+        model_type="logistic",
+        model_params=None,
 
-#     model_path = "model",
+        model_path = "model",
 
-#     test_size=0.2,
-#     random_state=42
-# )
+        test_size=0.2,
+        random_state=42
+    )
+
+    print(results)

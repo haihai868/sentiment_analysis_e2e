@@ -78,10 +78,10 @@ class TextPreprocessor:
         df['tokens'] = df['tokens'].apply(self.lemmatize)
         
         # Join tokens back to text
-        df['processed_text'] = df['tokens'].apply(' '.join)
+        df['clean_text'] = df['tokens'].apply(' '.join)
         
         # Remove empty texts
-        df = df[df['processed_text'].str.len() > 0]
+        df = df[df['clean_text'].str.len() > 0]
         
         logger.info(f"Preprocessing complete. {len(df)} samples remaining")
         

@@ -74,7 +74,7 @@ def load_production_onnx_model(model_name) -> ort.InferenceSession:
         model_uri = f"models:/{model_name}/Production"
         
         local_path = mlflow.artifacts.download_artifacts(model_uri=model_uri)
-        return ort.InferenceSession(f"{local_path}/model.onnx")
+        return ort.InferenceSession(f"{local_path}/onnx_model.onnx")
     
     except Exception as e:
         raise RuntimeError(f"Failed to load Production model '{model_name}': {e}")

@@ -23,7 +23,7 @@ stages:
       - model.C
     outs:
       # - models/model.pkl
-      - artifacts/model.onnx
+      - artifacts/onnx_model.onnx
 
   # evaluate:
   #   cmd: python src/models/evaluate.py
