@@ -11,11 +11,17 @@ import html
 
 logger = logging.getLogger(__name__)
 
-# Download NLTK data
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt')
+def _ensure_nltk_resource(resource_name: str, path: str) -> None:
+    try:
+        nltk.data.find(path)
+    except LookupError:
+        nltk.download(resource_name, quiet=True)
+
+
+_ensure_nltk_resource("punkt_tab", "tokenizers/punkt_tab")
+_ensure_nltk_resource("stopwords", "corpora/stopwords")
+_ensure_nltk_resource("wordnet", "corpora/wordnet")
+_ensure_nltk_resource("punkt", "tokenizers/punkt")
 
 class TextPreprocessor:
     """Text preprocessing for Twitter data"""
@@ -69,6 +75,7 @@ class TextPreprocessor:
         """Full preprocessing pipeline"""
         logger.info("Starting text preprocessing...")
         
+        df.dropna(inplace=True)
         # Clean text
         df['clean_text'] = df['text'].apply(self.clean_text)
         

@@ -18,17 +18,33 @@ stages:
     cmd: python src/models/train.py
     deps:
       - src/models/train.py
+      - src/models/onnx_export.py
+      - src/models/model_registry.py
       - data/processed/processed_twitter_data.csv
+      - params.yaml
     params:
-      - model.C
+      - model
+      - training
+      - gates
     outs:
-      # - models/model.pkl
       - artifacts/onnx_model.onnx
+      - artifacts/model_info.json
+      - artifacts/reference_stats.json
+    metrics:
+      - artifacts/metrics.json
 
-  # evaluate:
-  #   cmd: python src/models/evaluate.py
-  #   deps:
-  #     - src/models/evaluate.py
-  #     - models/model.pkl
-    # metrics:
-    #   - metrics.json
+  drift_monitor:
+    cmd: python src/monitoring/drift.py
+    deps:
+      - src/monitoring/drift.py
+      - artifacts/reference_stats.json
+    outs:
+      - artifacts/monitoring/drift_report.json
+
+  retrain_signal:
+    cmd: python src/monitoring/retrain.py
+    deps:
+      - src/monitoring/retrain.py
+      - artifacts/monitoring/drift_report.json
+    outs:
+      - artifacts/monitoring/retrain_signal.json

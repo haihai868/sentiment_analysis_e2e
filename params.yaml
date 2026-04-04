@@ -1,0 +1,19 @@
+model:
+  type: logistic
+  vectorizer_type: tfidf
+  ngram_range: [1, 1]
+  max_features: 5000
+  params:
+    C: 1.0
+    max_iter: 1000
+    solver: lbfgs
+
+training:
+  test_size: 0.2
+  random_state: 42
+
+gates:
+  accuracy_min: 0.75
+  f1_min: 0.75
+  precision_min: 0.70
+  recall_min: 0.70

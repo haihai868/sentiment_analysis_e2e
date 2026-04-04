@@ -36,6 +36,7 @@ services:
     #   - DB_URI=postgresql://mlflow:mlflow@db:5432/mlflow
     volumes:
       - ./artifacts:/mlflow/artifacts
+      - ./mlflow.db:/mlflow/mlflow.db
     networks:
       - sa-network
     command: >
@@ -44,11 +45,6 @@ services:
       --default-artifact-root /mlflow/artifacts
       --host 0.0.0.0 
       --port 5000
-
-  # redis:
-  #   image: redis:6-alpine
-  #   ports:
-  #     - "6379:6379"
 
   app:
     build:
@@ -60,13 +56,14 @@ services:
     depends_on:
       - mlflow
       # - s3
-      # - redis
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
-      REDIS_URL: redis://redis:6379
+      MODEL_PATH: /app/artifacts/onnx_model.onnx
+      MODEL_INFO_PATH: /app/artifacts/model_info.json
+      PREDICTION_LOG_PATH: /app/artifacts/monitoring/predictions.jsonl
+      DRIFT_REPORT_PATH: /app/artifacts/monitoring/drift_report.json
     volumes:
       - ./models:/app/models
-      # - ./logs:/app/logs
       - ./artifacts:/app/artifacts
     networks:
       - sa-network
@@ -92,6 +89,25 @@ services:
       - sa-network
     depends_on:
       - prometheus
+
+  drift-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: drift_monitor
+    command: ["python", "src/monitoring/worker.py"]
+    environment:
+      REFERENCE_STATS_PATH: /app/artifacts/reference_stats.json
+      PREDICTION_LOG_PATH: /app/artifacts/monitoring/predictions.jsonl
+      DRIFT_REPORT_PATH: /app/artifacts/monitoring/drift_report.json
+      RETRAIN_SIGNAL_PATH: /app/artifacts/monitoring/retrain_signal.json
+      MONITORING_INTERVAL_SECONDS: 300
+    volumes:
+      - ./artifacts:/app/artifacts
+    networks:
+      - sa-network
+    depends_on:
+      - app
 
   nginx:
     image: nginx:latest

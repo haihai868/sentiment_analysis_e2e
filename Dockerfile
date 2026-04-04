@@ -20,9 +20,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
 COPY src/ ./src/
+COPY params.yaml ./
 
 # Create necessary directories
-RUN mkdir -p /app/data/raw /app/data/processed /app/logs
+RUN mkdir -p /app/data/raw /app/data/processed /app/logs /app/artifacts/monitoring
 
 # Set environment variables
 ENV PYTHONPATH=/app
